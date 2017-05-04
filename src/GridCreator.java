@@ -236,19 +236,21 @@ public class GridCreator extends JPanel {
 	 * rotate the panel
 	 */
 	private void rightClick(int shipNum, int x, int y) {
-		// isVertical is set based on the layout of the panel (X or y axis)
-		boolean isVertical = false;
-		if (((BoxLayout) panelArray[shipNum].getLayout()).getAxis() == BoxLayout.Y_AXIS) {
-			isVertical = true;
+		if(currentlyPlacingShip) {
+			return;
 		}
+
+		// isVertical is set based on the layout of the panel (X or y axis)
+		boolean isVertical = ((BoxLayout) panelArray[shipNum].getLayout()).getAxis() == BoxLayout.Y_AXIS;
 		// calls the remove method to remove the ship (not the panel)
-		removeShipFromGridArray(shipArray[shipNum], isVertical);
+		removeShipFromGridArray(shipArray[shipNum]);
+
 		// attempts to rotate the panel.
-		if (rotatePanel(panelArray[shipNum]) && !currentlyPlacingShip) {
+		if (rotatePanel(panelArray[shipNum])) {
 			// if it works call the add method to add the ship pieces in the
 			// new orientation
 			addShipToGridArray(shipArray[shipNum], new Point(x, y), !isVertical);
-		} else if (!currentlyPlacingShip) {
+		} else {
 			panelArray[shipNum].setLocation(shipArray[shipNum].getStartingOffGridPosition());
 			rotatePanel(panelArray[shipNum]);
 		}
@@ -272,13 +274,13 @@ public class GridCreator extends JPanel {
 					// sets the location back to its starting position
 					panelArray[shipNum].setLocation(shipArray[shipNum].getStartingOffGridPosition());
 					// removes the panel from the array
-					removeShipFromGridArray(shipArray[shipNum], false);
+					removeShipFromGridArray(shipArray[shipNum]);
 				}
 			} else {
 				// sets the location back to the starting position
 				panelArray[shipNum].setLocation(shipArray[shipNum].getStartingOffGridPosition());
 				// removes the panel from the array
-				removeShipFromGridArray(shipArray[shipNum], false);
+				removeShipFromGridArray(shipArray[shipNum]);
 			}
 		} else {
 			// checks if the panel is on the grid
@@ -293,7 +295,7 @@ public class GridCreator extends JPanel {
 					// sets the location back to the starting position
 					panelArray[shipNum].setLocation(shipArray[shipNum].getStartingOffGridPosition());
 					// removes the panel from the array
-					removeShipFromGridArray(shipArray[shipNum], true);
+					removeShipFromGridArray(shipArray[shipNum]);
 				}
 			} else {
 				// rotates the panel so it is along the x axis
@@ -301,7 +303,7 @@ public class GridCreator extends JPanel {
 				// sets the location back to the starting position
 				panelArray[shipNum].setLocation(shipArray[shipNum].getStartingOffGridPosition());
 				// removes the panel from the array
-				removeShipFromGridArray(shipArray[shipNum], true);
+				removeShipFromGridArray(shipArray[shipNum]);
 			}
 		}
 
@@ -323,13 +325,13 @@ public class GridCreator extends JPanel {
 				rotatePanel(panelArray[shipNum]);
 			}
 			// remove the ship from the grid array
-			removeShipFromGridArray(shipArray[shipNum], false);
+			removeShipFromGridArray(shipArray[shipNum]);
 			// sets the panel location to its original location
 			panelArray[shipNum].setLocation(shipArray[shipNum].getStartingOffGridPosition());
 
 			// if there is no intersection
 		} else {
-			removeShipFromGridArray(shipArray[shipNum], isVertical);
+			removeShipFromGridArray(shipArray[shipNum]);
 			addShipToGridArray(shipArray[shipNum], new Point(x, y), isVertical);
 
 		}
@@ -369,12 +371,12 @@ public class GridCreator extends JPanel {
 	/*
 	 * Removes ships from the grid array
 	 */
-	private void removeShipFromGridArray(Ship ship, boolean isVertical) {
+	private void removeShipFromGridArray(Ship ship) {
 		// loops through the grid array
 		for (int i = 0; i < gridArray.length; i++) {
 			for (int j = 0; j < gridArray[i].length; j++) {
 				for (int k = 0; k < ship.getShipPieces().length; k++) {
-					if (gridArray[j][i] == (ShipPiece) ship.getShipPieces()[k]) {
+					if (gridArray[j][i] == ship.getShipPieces()[k]) {
 						gridArray[j][i] = 1;
 					}
 				}
@@ -388,8 +390,7 @@ public class GridCreator extends JPanel {
 	private void addShipToGridArray(Ship ship, Point location, boolean isVertical) {
 
 		// if the location is a valid point in the array
-		if (location.getX() < gridArray.length && location.getX() >= 0 && location.getY() < gridArray.length
-				&& location.getY() >= 0) {
+		if (location.getX() < gridArray.length && location.getX() >= 0 && location.getY() < gridArray.length && location.getY() >= 0) {
 			// loop through the ship pieces in the ship
 			for (int i = 0; i < ship.getShipPieces().length; i++) {
 				// if the ship is vertical

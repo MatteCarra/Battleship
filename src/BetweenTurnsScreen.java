@@ -1,3 +1,5 @@
+import listeners.AttackListener;
+
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -9,15 +11,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class BetweenTurnsScreen {
-
 	private JPanel window;
 	private ImageIcon backgroundImageIcon;
 	private JLabel bkgImageContainer;
 	private volatile boolean isImageVisible;
 	private Grid grid;
 	private SmallGrid small;
-	
-	public BetweenTurnsScreen(JPanel theWindow, Grid grid, SmallGrid small){
+	private AttackListener listener;
+
+	public BetweenTurnsScreen(JPanel theWindow, Grid grid, SmallGrid small, AttackListener listener){
 		window = theWindow;
 		backgroundImageIcon = new ImageIcon("WaitForOpponentsMove.png");
 		Image bkgImage = backgroundImageIcon.getImage();
@@ -31,14 +33,19 @@ public class BetweenTurnsScreen {
 		isImageVisible = true;
 		this.grid = grid;
 		this.small = small;
-
-		//TODO Ricevi la mossa dell'avversario e invoca il metodo onInfoReceived.
+		this.listener = listener;
 	}
 	
 	public void loadTurnScreen() {
+		grid.setVisible(false);
+		small.setVisible(false);
 		window.add(bkgImageContainer);
 		window.setVisible(true);
 		window.repaint();
+        //TODO Ricevi la mossa dell'avversario e invoca il metodo onInfoReceived.
+        //onInfoReceived(x, y);
+        listener.onAttack();
+
 	}
 
 	public boolean isImageVisible(){

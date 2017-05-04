@@ -1,11 +1,12 @@
+import listeners.AttackListener;
+import listeners.SelectListener;
+
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class GameLogic implements SelectListener{
+public class GameLogic implements SelectListener, AttackListener {
 	
 	private final static int BOARD_SIZE = 10;
 	
@@ -22,6 +23,11 @@ public class GameLogic implements SelectListener{
 	private boolean gameRunning;
 	private Grid grid;
 	private SmallGrid small;
+
+	private BetweenTurnsScreen betweenTurns;
+
+	private Ship[] p1Ships;
+	private Ship[] p2Ships;
 	
 	public void setUpWindow() {
 		frame = new JFrame();
@@ -56,20 +62,22 @@ public class GameLogic implements SelectListener{
             Thread.sleep(100);
         }
 		
-		Ship[] p1Ships = initializeShipCreation();
+		p1Ships = initializeShipCreation();
 
-        System.out.println("DONE");
-
+		//TODO devi mandare le tue navi al tuo nemico
         Object[][] myShips = chooseShipPositions(p1Ships);
-        //TODO devi mandare le tue navi al tuo nemico
 
+        p2Ships = null;
         Object[][] enemyShips = null;
         //TODO devi ricevere le navi del nemico e magari mostrare una schermata di attesa se lui non le ha già mandate
 
         if(enemyShips != null) {
+        	//TODO si devono ricevere ShipPiece e le loro posizioni in una sorta di chiave valori
+            //TODO esempio: nave 1 (X=5, Y=5) (X=6, y=5)
+            p2Ships = null;
             grid = new Grid(enemyShips, this);
         } else {
-            Ship[] p2Ships = initializeShipCreation();
+            p2Ships = initializeShipCreation();
             grid = new Grid(randomizeGrid(p2Ships), this);
             //TODO Quando avrai implementato i socket devi chiudere il gioco in questo caso
             // e cancellare queste due righe qui sopra aggiunte solo per debuggare
@@ -81,17 +89,28 @@ public class GameLogic implements SelectListener{
 		small = new SmallGrid(myShips);
         small.setLocation(grid.getWidth()+10, grid.getY());
 
+
         int windowWidth = small.getX() + small.getWidth() + 10;
         frame.setPreferredSize(new Dimension(windowWidth, frame.getHeight()));
         frame.setSize(frame.getPreferredSize());
         frame.pack();
+
 
         frame.getContentPane().add(grid); // adds the grids to the window
         frame.getContentPane().add(small);
         frame.addMouseListener(grid);
         frame.setVisible(true);
 
-		gameLoop(p1Ships, grid, small);
+        betweenTurns = new BetweenTurnsScreen((JPanel) frame.getContentPane(), grid, small, this);
+
+        //TODO ottieni questo valore dal server per sapere se è il tuo turno.
+        boolean ilMioturno = false;
+
+        if(!ilMioturno) {
+            betweenTurns.loadTurnScreen();
+        }
+
+		//gameLoop(p1Ships, grid, small);
 	}
 	
 	private Ship[] initializeShipCreation() {
@@ -153,61 +172,58 @@ public class GameLogic implements SelectListener{
         return creator.getGridArray();
     }
 
-	
-	private void gameLoop(Ship[] p1Ships, Grid grid, SmallGrid small) throws InterruptedException {
-		while (gameRunning) {
-		    //Todo non so se sia opportuno metterlo e non ho voglia di controllare
-            Thread.sleep(100);
 
-            boolean p1AllShipsDead = true;
+	public void checkEnd(){
+        boolean p1AllShipsDead = true;
+        boolean p2AllShipsDead = true;
+        for (int i = 0; i < p1Ships.length; i++) {
+            if (p1Ships[i].checkIfDead()) {
+                for (int j = 0; j < p1Ships[i].getShipPieces().length; j++) {
+                    p1Ships[i].getShipPieces()[j].setShipImage("dead.png");
+                }
+            } else {
+                p1AllShipsDead = false;
+            }
+        }
 
-			for (int i = 0; i < p1Ships.length; i++) {
-				if (p1Ships[i].checkIfDead()) {
-					for (int j = 0; j < p1Ships[i].getShipPieces().length; j++) {
-                        p1Ships[i].getShipPieces()[j].setShipImage("dead.png");
+        for (int i = 0; i < p2Ships.length; i++) {
+            if (p2Ships[i].checkIfDead()) {
+                for (int j = 0; j < p2Ships[i].getShipPieces().length; j++)
+                    p2Ships[i].getShipPieces()[j].setShipImage("Dead.png");
+            } else {
+                p2AllShipsDead = false;
+            }
+        }
+
+        grid.repaint();
+        small.repaint();
+
+        if (p1AllShipsDead || p2AllShipsDead) {
+            gameRunning = false;
+            for (int i = 0; i < grid.getArray().length; i++) {
+                for (int j = 0; j < grid.getArray()[i].length; j++) {
+                    if ((grid.getArray()[i][j].equals(1))) {
+                        grid.getArray()[i][j] = 0;
                     }
-				} else {
-					p1AllShipsDead = false;
-				}
-			}
-
-			//TODO Ricevi p2AllShipsDead e manda p1AllShipsDead
-			boolean p2AllShipsDead = false;
-
-			grid.repaint();
-			small.repaint();
-
-			grid.repaint();
-			small.repaint();
-
-			if (p1AllShipsDead || p2AllShipsDead) {
-				gameRunning = false;
-				for (int i = 0; i < grid.getArray().length; i++) {
-					for (int j = 0; j < grid.getArray()[i].length; j++) {
-						if ((grid.getArray()[i][j].equals((Object) 1))) {
-							grid.getArray()[i][j] = (Object) 0;
-						}
-					}
-				}
-				//grid.repaint();
-				//small.repaint();
-				//grid.setVisible(true);
-				GameOverScreen gameOver = new GameOverScreen(frame, !p1AllShipsDead);
-				gameOver.loadEndScreen();
-			}
-		}
-		
-	}
+                }
+            }
+            GameOverScreen gameOver = new GameOverScreen(frame, !p1AllShipsDead);
+            gameOver.loadEndScreen();
+        }
+    }
 
     @Override
     public void onSelection(int x, int y) {
         //TODO manda all'avversario la selezione che hai fatto
+        checkEnd();
 
-        BetweenTurnsScreen betweenTurns = new BetweenTurnsScreen((JPanel) frame.getContentPane(), grid, small);
         if (!grid.isTurn() && gameRunning){
-            grid.setVisible(false);
-            small.setVisible(false);
             betweenTurns.loadTurnScreen();
         }
+    }
+
+    @Override
+    public void onAttack() {
+        checkEnd();
     }
 }
