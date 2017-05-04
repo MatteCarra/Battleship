@@ -75,6 +75,7 @@ public class GameLogic implements SelectListener, AttackListener {
         	//TODO si devono ricevere ShipPiece e le loro posizioni in una sorta di chiave valori
             //TODO esempio: nave 1 (X=5, Y=5) (X=6, y=5)
             p2Ships = null;
+            enemyShips = null;
             grid = new Grid(enemyShips, this);
         } else {
             p2Ships = initializeShipCreation();
@@ -179,7 +180,7 @@ public class GameLogic implements SelectListener, AttackListener {
         for (int i = 0; i < p1Ships.length; i++) {
             if (p1Ships[i].checkIfDead()) {
                 for (int j = 0; j < p1Ships[i].getShipPieces().length; j++) {
-                    p1Ships[i].getShipPieces()[j].setShipImage("dead.png");
+                    p1Ships[i].getShipPieces()[j].setShipImage("Dead.png");
                 }
             } else {
                 p1AllShipsDead = false;
