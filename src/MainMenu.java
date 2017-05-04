@@ -1,3 +1,5 @@
+import listeners.PlayListener;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -5,15 +7,17 @@ import java.awt.event.MouseListener;
 import javax.swing.*;
 
 public class MainMenu implements ActionListener {
-	
+
+	private final PlayListener listener;
 	private JFrame window;
 	private JButton play;
 	private volatile boolean isImageVisible;
 	
-	public MainMenu(JFrame theWindow){
+	public MainMenu(JFrame theWindow, PlayListener listener){
 		window = theWindow;
 		play = new JButton("Play");
 		isImageVisible = true;
+		this.listener = listener;
 	}
 	
 	public void loadTitleScreen() {
@@ -38,5 +42,6 @@ public class MainMenu implements ActionListener {
 		window.getContentPane().revalidate();
 		window.getContentPane().repaint();
 		isImageVisible = false;
+		listener.onPlayClicked();
 	}
 }

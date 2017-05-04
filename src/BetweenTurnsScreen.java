@@ -1,10 +1,7 @@
 import listeners.AttackListener;
 
 import java.awt.Image;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -37,15 +34,12 @@ public class BetweenTurnsScreen {
 	}
 	
 	public void loadTurnScreen() {
-		grid.setVisible(false);
+        grid.setVisible(false);
 		small.setVisible(false);
 		window.add(bkgImageContainer);
 		window.setVisible(true);
 		window.repaint();
         //TODO Ricevi la mossa dell'avversario e invoca il metodo onInfoReceived.
-        //onInfoReceived(x, y);
-        listener.onAttack();
-
 	}
 
 	public boolean isImageVisible(){
@@ -63,5 +57,7 @@ public class BetweenTurnsScreen {
 		grid.setTurn(true);
 		grid.setVisible(true);
 		small.setVisible(true);
+
+        listener.onAttackReceived();
 	}
 }

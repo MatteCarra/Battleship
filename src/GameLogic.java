@@ -1,12 +1,15 @@
 import listeners.AttackListener;
+import listeners.PlayListener;
 import listeners.SelectListener;
+import listeners.SetupListener;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
 
-public class GameLogic implements SelectListener, AttackListener {
+public class GameLogic implements SelectListener, AttackListener, PlayListener, SetupListener {
 	
 	private final static int BOARD_SIZE = 10;
 	
@@ -21,11 +24,10 @@ public class GameLogic implements SelectListener, AttackListener {
 	private final static int SUBMARINE_COUNT = 4;
 	private JFrame frame;
 	private boolean gameRunning;
+
 	private Grid grid;
 	private SmallGrid small;
-
 	private BetweenTurnsScreen betweenTurns;
-
 	private Ship[] p1Ships;
 	private Ship[] p2Ships;
 	
@@ -39,6 +41,7 @@ public class GameLogic implements SelectListener, AttackListener {
 		frame.setMinimumSize(new Dimension(900, 615));
 		frame.setResizable(false);
 		frame.pack();
+
         try {
             startGame();
         } catch (InterruptedException e) {
@@ -46,33 +49,48 @@ public class GameLogic implements SelectListener, AttackListener {
         }
     }
 
+    public void  mainMenu() {
+        MainMenu startMenu = new MainMenu(frame, this);
+        startMenu.loadTitleScreen();
+    }
+
     public void connect(){
 	    //TODO ti devi connettere e iniziare ad attendere il pacchetto delle enemyShips
     }
 	
 	public void startGame() throws InterruptedException {
-		gameRunning = true;
-		connect();
-		
-		MainMenu startMenu = new MainMenu(frame);
-		startMenu.loadTitleScreen();
+        betweenTurns = null;
+        grid = null;
+        small = null;
+        p2Ships = null;
+        p1Ships = null;
 
-		while(startMenu.isImageVisible()){
-            //Todo non so se sia opportuno mettere lo sleep e non ho voglia di controllare
-            Thread.sleep(100);
-        }
-		
-		p1Ships = initializeShipCreation();
+        gameRunning = true;
+        mainMenu();
 
-		//TODO devi mandare le tue navi al tuo nemico
-        Object[][] myShips = chooseShipPositions(p1Ships);
+    }
+
+    public void startPlaying() throws InterruptedException {
+        connect();
+
+        p1Ships = initializeShipCreation();
+
+        //TODO devi mandare le tue navi al tuo nemico
+        chooseShipPositions(p1Ships);
+	}
+
+    @Override
+    public void onSetupComplete(Object[][] myShips) {
+        frame.getContentPane().removeAll();
+        frame.getContentPane().revalidate();
+        frame.getContentPane().repaint();
 
         p2Ships = null;
         Object[][] enemyShips = null;
         //TODO devi ricevere le navi del nemico e magari mostrare una schermata di attesa se lui non le ha già mandate
 
         if(enemyShips != null) {
-        	//TODO si devono ricevere ShipPiece e le loro posizioni in una sorta di chiave valori
+            //TODO si devono ricevere ShipPiece e le loro posizioni in una sorta di chiave valori
             //TODO esempio: nave 1 (X=5, Y=5) (X=6, y=5)
             p2Ships = null;
             enemyShips = null;
@@ -87,7 +105,7 @@ public class GameLogic implements SelectListener, AttackListener {
         }
 
         //TODO Ricevi l'ok dal nemico
-		small = new SmallGrid(myShips);
+        small = new SmallGrid(myShips);
         small.setLocation(grid.getWidth()+10, grid.getY());
 
 
@@ -110,9 +128,8 @@ public class GameLogic implements SelectListener, AttackListener {
         if(!ilMioturno) {
             betweenTurns.loadTurnScreen();
         }
-
-		//gameLoop(p1Ships, grid, small);
-	}
+        //gameLoop(p1Ships, grid, small);
+    }
 	
 	private Ship[] initializeShipCreation() {
 		Ship[] battleships = createShips(BATTLESHIP_SIZE, BATTLESHIP_COUNT);
@@ -150,24 +167,16 @@ public class GameLogic implements SelectListener, AttackListener {
 		return c;
 	}
 	
-	private Object[][] chooseShipPositions(Ship[] ships) throws InterruptedException {
-		GridCreator creator = new GridCreator(ships, BOARD_SIZE, frame);
+	private void chooseShipPositions(Ship[] ships) throws InterruptedException {
+		GridCreator creator = new GridCreator(ships, BOARD_SIZE, frame, this);
 		creator.setup();
 		frame.getContentPane().add(creator);
 		frame.getContentPane().repaint();
 		frame.setVisible(true);
-		while (!creator.isSetupOver()) {
-		    Thread.sleep(100);
-        }
-		frame.getContentPane().removeAll();
-		frame.getContentPane().revalidate();
-		frame.getContentPane().repaint();
-		
-		return creator.getGridArray();
 	}
 
     private Object[][] randomizeGrid(Ship[] ships){
-        GridCreator creator = new GridCreator(ships, BOARD_SIZE, frame);
+        GridCreator creator = new GridCreator(ships, BOARD_SIZE, frame, this);
         creator.setup();
         creator.randomize();
         return creator.getGridArray();
@@ -219,12 +228,31 @@ public class GameLogic implements SelectListener, AttackListener {
         checkEnd();
 
         if (!grid.isTurn() && gameRunning){
-            betweenTurns.loadTurnScreen();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    betweenTurns.loadTurnScreen();
+                }
+            }).start();
         }
     }
 
     @Override
-    public void onAttack() {
+    public void onAttackReceived() {
         checkEnd();
+    }
+
+    @Override
+    public void onPlayClicked() {
+        try {
+            startPlaying();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

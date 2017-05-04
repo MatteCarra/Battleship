@@ -1,3 +1,5 @@
+import listeners.SetupListener;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -37,15 +39,18 @@ public class GridCreator extends JPanel {
 	public static final int BORDER_SIZE = 5;
 	public static boolean currentlyPlacingShip = false;
 
-	public GridCreator(Ship[] shipArray, JFrame app) {
-		this(shipArray, 10, app);
+	private final SetupListener listener;
+
+	public GridCreator(Ship[] shipArray, JFrame app, SetupListener listener) {
+		this(shipArray, 10, app, listener);
 	}
 
-	public GridCreator(Ship[] shipArray, int gridSize, JFrame app) {
-		this(shipArray, gridSize, "gridLabels.png", app);
+	public GridCreator(Ship[] shipArray, int gridSize, JFrame app, SetupListener listener) {
+		this(shipArray, gridSize, "gridLabels.png", app, listener);
 	}
 
-	public GridCreator(Ship[] shipArray, int gridSize, String path, JFrame app) {
+	public GridCreator(Ship[] shipArray, int gridSize, String path, JFrame app, SetupListener listener) {
+		this.listener = listener;
 		setLayout(null);
 		setBackground(Color.white);
 		setLocation(0,0);
@@ -115,6 +120,7 @@ public class GridCreator extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				setupOver = true;
+				listener.onSetupComplete(gridArray);
 			}
 		});
 		add(endSetup);
