@@ -21,19 +21,22 @@ public class Grid extends JPanel implements MouseListener {
 	public static final int BORDER_SIZE = 5; // size of the border between spaces
 	private volatile boolean isTurn;
 	private boolean state;
+	private SelectListener listener;
 
 	/*
 	 * Default constructor. Uses an empty array
 	 */
-	public Grid() {
+	public Grid(SelectListener selectListener) {
 		this(new Object[10][10], "gridLabels.png");
+		this.listener = selectListener;
 	}
 
 	/*
 	 * Constructor that takes an array
 	 */
-	public Grid(Object[][] arr) {
+	public Grid(Object[][] arr, SelectListener selectListener) {
 		this(arr, "gridLabels.png");
+		this.listener = selectListener;
 	}
 
 	/*
@@ -69,7 +72,7 @@ public class Grid extends JPanel implements MouseListener {
 			for (int j = 0; j < array[i].length; j++) {
 				// checks if there is a 1 or a ShipPiece that has not been
 				// destroyed
-				if (array[i][j].equals((Object) 1) || ((array[i][j]).getClass().getName().equals("ShipPiece")
+				if (array[i][j] != null && (array[i][j].equals(1) || (array[i][j] instanceof ShipPiece)
 						&& !((ShipPiece) array[i][j]).isDestroy())) {
 					// covers the spot on the grid with a gray box
 					g2.setColor(Color.gray);
@@ -77,7 +80,7 @@ public class Grid extends JPanel implements MouseListener {
 							TILE_SIZE+(BORDER_SIZE/2)-1, TILE_SIZE+(BORDER_SIZE/2)-1);
 					// if there is a ship piece at the position that is
 					// destroyed
-				} else if ((array[i][j]).getClass().getName().equals("ShipPiece")) {
+				} else if (array[i][j] instanceof ShipPiece) {
 					// draw the image associated with the ship piece
 					g2.drawImage(((ShipPiece) array[i][j]).getShipImage(),
 							X_ORIGIN + i + ((TILE_SIZE + BORDER_SIZE) * i) + BORDER_SIZE/2,
@@ -93,23 +96,11 @@ public class Grid extends JPanel implements MouseListener {
 		// left click
 		if (isTurn && e.getButton() == MouseEvent.BUTTON1) {
 
-			// turns the x coordinate of the mouse into an x coordinate in the
-			// grid array using MATH
 			int value = e.getX();
-			int counter1 = 0;
-			while (X_ORIGIN + ((TILE_SIZE + BORDER_SIZE) * counter1) + BORDER_SIZE < value) {
-				counter1++;
-			}
-			counter1--;
+			int counter1 = Math.round((value - X_ORIGIN) / (TILE_SIZE + BORDER_SIZE));
 
-			// turns the y coordinate of the mouse into a y coordinate in the
-			// grid array using MATH
-			int value2 = e.getY() - (TILE_SIZE / 2);
-			int counter2 = 0;
-			while (Y_ORIGIN + ((TILE_SIZE + BORDER_SIZE) * counter2) + BORDER_SIZE < value2) {
-				counter2++;
-			}
-			counter2--;
+			int value2 = e.getY();
+			int counter2 = Math.round((value2 - Y_ORIGIN) / (TILE_SIZE + BORDER_SIZE));
 
 			// if (counter1,counter2) is a valid position in the array
 			if (counter1 < array.length && counter1 >= 0) {
@@ -124,6 +115,8 @@ public class Grid extends JPanel implements MouseListener {
 						isTurn = false;
 						// if the object at the coordinate is a ShipPiece that
 						// is not destroyed
+
+						listener.onSelection(counter1, counter2);
 					} else if ((array[counter1][counter2]).getClass().getName().equals("ShipPiece")
 							&& !((ShipPiece) array[counter1][counter2]).isDestroy()) {
 						// destroy the ship piece
@@ -131,6 +124,8 @@ public class Grid extends JPanel implements MouseListener {
 						repaint();
 						// end the turn
 						isTurn = false;
+
+						listener.onSelection(counter1, counter2);
 					}
 					state = false;
 				}

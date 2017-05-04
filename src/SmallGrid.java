@@ -38,6 +38,19 @@ public class SmallGrid extends JPanel {
 		}
 	}
 
+	public boolean attack(int x, int y) {
+		if (array[x][y].equals(1)) {
+			repaint();
+			return false;
+		} else if (array[x][y] instanceof ShipPiece && !((ShipPiece) array[x][y]).isDestroy()) {
+			// destroy the ship piece
+			((ShipPiece) array[x][y]).destroy();
+			repaint();
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);

@@ -28,7 +28,7 @@ public class GridCreator extends JPanel {
 	private Object[][] gridArray;
 	private Ship[] shipArray;
 	private JPanel[] panelArray;
-	private JButton endSetup, randomizeShipsBtn;
+	private JButton endSetup,randomizeShipsBtn;
 	private JFrame window;
 	private volatile boolean setupOver = false;
 	public static final int X_ORIGIN = 54;
@@ -101,24 +101,7 @@ public class GridCreator extends JPanel {
 		randomizeShipsBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Random rand = new Random();
-				for (int i = 0; i < panelArray.length; i++) {
-					panelArray[i].setLocation(shipArray[i].getStartingOffGridPosition());
-				}
-				for (int i = 0; i < panelArray.length; i++) {
-					int timeout = 0;
-					while (timeout < 8
-							&& shipArray[i].getStartingOffGridPosition().equals(panelArray[i].getLocation())) {
-						int x = rand.nextInt(gridArray.length);
-						int y = rand.nextInt(gridArray.length);
-						timeout++;
-						leftClick(i, x, y);
-						if (rand.nextInt(2) == 0
-								&& !shipArray[i].getStartingOffGridPosition().equals(panelArray[i].getLocation())) {
-							rightClick(i, x, y);
-						}
-					}
-				}
+				randomize();
 			}
 		});
 		add(randomizeShipsBtn);
@@ -190,23 +173,12 @@ public class GridCreator extends JPanel {
 					// gets the coordinates of the mouse in terms of the window
 					JPanel component = (JPanel) e.getComponent().getParent().getParent();
 					Point pt = new Point(SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), component));
-					int counter1 = 0;
-					int counter2 = 0;
 
-					// calculates the position in the grid array based on the
-					// mouse coordinates
 					int value = (int) pt.getX();
+                    int counter1 = Math.round((value - X_ORIGIN) / (TILE_SIZE + BORDER_SIZE));
 
-					while (X_ORIGIN + ((TILE_SIZE + BORDER_SIZE) * counter1) < value) {
-						counter1++;
-					}
-					counter1--;
-
-					int value2 = (int) (pt.getY());
-					while (Y_ORIGIN + ((TILE_SIZE + BORDER_SIZE) * counter2) < value2) {
-						counter2++;
-					}
-					counter2--;
+                    int value2 = (int) pt.getY();
+                    int counter2 = Math.round((value2 - Y_ORIGIN) / (TILE_SIZE + BORDER_SIZE));
 
 					// if left button released
 					if (e.getButton() == MouseEvent.BUTTON1) {
@@ -235,6 +207,27 @@ public class GridCreator extends JPanel {
 				}
 
 			});
+		}
+	}
+
+	public void randomize() {
+		Random rand = new Random();
+		for (int i = 0; i < panelArray.length; i++) {
+			panelArray[i].setLocation(shipArray[i].getStartingOffGridPosition());
+		}
+		for (int i = 0; i < panelArray.length; i++) {
+			int timeout = 0;
+			while (timeout < 8
+					&& shipArray[i].getStartingOffGridPosition().equals(panelArray[i].getLocation())) {
+				int x = rand.nextInt(gridArray.length);
+				int y = rand.nextInt(gridArray.length);
+				timeout++;
+				leftClick(i, x, y);
+				if (rand.nextInt(2) == 0
+						&& !shipArray[i].getStartingOffGridPosition().equals(panelArray[i].getLocation())) {
+					rightClick(i, x, y);
+				}
+			}
 		}
 	}
 
