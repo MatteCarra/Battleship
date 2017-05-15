@@ -1,4 +1,6 @@
-import listeners.SelectListener;
+package com.battleship;
+
+import com.battleship.listeners.SelectListener;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -72,7 +74,7 @@ public class Grid extends JPanel implements MouseListener {
 		// loops through all spots in the grid
 		for (int i = 0; i < array.length; i++) {
 			for (int j = 0; j < array[i].length; j++) {
-				// checks if there is a 1 or a ShipPiece that has not been
+				// checks if there is a 1 or a com.battleship.ShipPiece that has not been
 				// destroyed
 				if (array[i][j] != null && (array[i][j].equals(1) || (array[i][j] instanceof ShipPiece)
 						&& !((ShipPiece) array[i][j]).isDestroy())) {
@@ -115,11 +117,11 @@ public class Grid extends JPanel implements MouseListener {
 						repaint();
 						// end the turn
 						isTurn = false;
-						// if the object at the coordinate is a ShipPiece that
+						// if the object at the coordinate is a com.battleship.ShipPiece that
 						// is not destroyed
 
 						listener.onSelection(counter1, counter2);
-					} else if ((array[counter1][counter2]).getClass().getName().equals("ShipPiece")
+					} else if ((array[counter1][counter2]).getClass().getName().equals("com.battleship.ShipPiece")
 							&& !((ShipPiece) array[counter1][counter2]).isDestroy()) {
 						// destroy the ship piece
 						((ShipPiece) array[counter1][counter2]).destroy();

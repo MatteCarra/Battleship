@@ -1,12 +1,12 @@
-import listeners.AttackListener;
-import listeners.PlayListener;
-import listeners.SelectListener;
-import listeners.SetupListener;
+package com.battleship;
+
+import com.battleship.listeners.AttackListener;
+import com.battleship.listeners.PlayListener;
+import com.battleship.listeners.SelectListener;
+import com.battleship.listeners.SetupListener;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.*;
 
 public class GameLogic implements SelectListener, AttackListener, PlayListener, SetupListener {
@@ -90,7 +90,7 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
         //TODO devi ricevere le navi del nemico e magari mostrare una schermata di attesa se lui non le ha già mandate
 
         if(enemyShips != null) {
-            //TODO si devono ricevere ShipPiece e le loro posizioni in una sorta di chiave valori
+            //TODO si devono ricevere com.battleship.ShipPiece e le loro posizioni in una sorta di chiave valori
             //TODO esempio: nave 1 (X=5, Y=5) (X=6, y=5)
             p2Ships = null;
             enemyShips = null;

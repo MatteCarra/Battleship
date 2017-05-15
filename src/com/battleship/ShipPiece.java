@@ -1,3 +1,5 @@
+package com.battleship;
+
 import java.awt.*;
 import javax.swing.ImageIcon;
 

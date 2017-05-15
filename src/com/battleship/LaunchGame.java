@@ -1,3 +1,4 @@
+package com.battleship;
 
 public class LaunchGame{
 	public static void main(String[] args) {

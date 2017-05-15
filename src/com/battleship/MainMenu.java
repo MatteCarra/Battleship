@@ -1,9 +1,9 @@
-import listeners.PlayListener;
+package com.battleship;
+
+import com.battleship.listeners.PlayListener;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.*;
 
 public class MainMenu implements ActionListener {

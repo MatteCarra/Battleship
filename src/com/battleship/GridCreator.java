@@ -1,4 +1,6 @@
-import listeners.SetupListener;
+package com.battleship;
+
+import com.battleship.listeners.SetupListener;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -101,7 +103,7 @@ public class GridCreator extends JPanel {
 
 		int buttonXPos = gridLabel.getWidth();
 
-		randomizeShipsBtn = new JButton("Randomize Grid");
+		randomizeShipsBtn = new JButton("Randomize com.battleship.Grid");
 		randomizeShipsBtn.setBounds(buttonXPos, 0, window.getWidth() - buttonXPos, TILE_SIZE - 5);
 		randomizeShipsBtn.addActionListener(new ActionListener() {
 			@Override
@@ -199,7 +201,7 @@ public class GridCreator extends JPanel {
 					System.out.println();
 					for (int i = 0; i < gridArray.length; i++) {
 						for (int j = 0; j < gridArray[i].length; j++) {
-							if (gridArray[j][i].getClass().getName().equals("ShipPiece")) {
+							if (gridArray[j][i].getClass().getName().equals("com.battleship.ShipPiece")) {
 								System.out.print("1 ");
 							} else {
 								System.out.print("0 ");

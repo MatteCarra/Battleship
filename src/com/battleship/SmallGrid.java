@@ -1,3 +1,5 @@
+package com.battleship;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -62,7 +64,7 @@ public class SmallGrid extends JPanel {
 		for (int i = 0; i < array.length; i++) {
 			for (int j = 0; j < array[i].length; j++) {
 				// if there is a ship piece at the location
-				if ((array[i][j]).getClass().getName().equals("ShipPiece")) {
+				if ((array[i][j]).getClass().getName().equals("com.battleship.ShipPiece")) {
 					// draw the image of the ship piece at the proper grid
 					// location
 					g2.drawImage(((ShipPiece) array[i][j]).getShipImage(), 
