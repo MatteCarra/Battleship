@@ -2,7 +2,7 @@ package com.battleship;
 
 import com.battleship.listeners.AttackListener;
 
-import java.awt.Image;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import javax.swing.ImageIcon;
@@ -17,8 +17,9 @@ public class BetweenTurnsScreen {
 	private Grid grid;
 	private SmallGrid small;
 	private AttackListener listener;
+	private SocketConnector connector;
 
-	public BetweenTurnsScreen(JPanel theWindow, Grid grid, SmallGrid small, AttackListener listener){
+	public BetweenTurnsScreen(JPanel theWindow, Grid grid, SmallGrid small, AttackListener listener, SocketConnector connector){
 		window = theWindow;
 		backgroundImageIcon = new ImageIcon("WaitForOpponentsMove.png");
 		Image bkgImage = backgroundImageIcon.getImage();
@@ -33,6 +34,7 @@ public class BetweenTurnsScreen {
 		this.grid = grid;
 		this.small = small;
 		this.listener = listener;
+		this.connector = connector;
 	}
 	
 	public void loadTurnScreen() {
@@ -41,7 +43,15 @@ public class BetweenTurnsScreen {
 		window.add(bkgImageContainer);
 		window.setVisible(true);
 		window.repaint();
-        //TODO Ricevi la mossa dell'avversario e invoca il metodo onInfoReceived.
+
+		new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Point p = connector.readMove();
+                onInfoReceived(p.x, p.y);
+            }
+        }).start();
+
 	}
 
 	public boolean isImageVisible(){

@@ -122,6 +122,7 @@ public class GridCreator extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				setupOver = true;
+				System.out.println("Setup over!");
 				listener.onSetupComplete(gridArray);
 			}
 		});

@@ -7,6 +7,8 @@ import com.battleship.listeners.SetupListener;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.net.ServerSocket;
+import java.net.Socket;
 import javax.swing.*;
 
 public class GameLogic implements SelectListener, AttackListener, PlayListener, SetupListener {
@@ -30,6 +32,9 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
 	private BetweenTurnsScreen betweenTurns;
 	private Ship[] p1Ships;
 	private Ship[] p2Ships;
+
+	private SocketConnector connector;
+	private boolean isServer = true;
 	
 	public void setUpWindow() {
 		frame = new JFrame();
@@ -54,10 +59,7 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
         startMenu.loadTitleScreen();
     }
 
-    public void connect(){
-	    //TODO ti devi connettere e iniziare ad attendere il pacchetto delle enemyShips
-    }
-	
+
 	public void startGame() throws InterruptedException {
         betweenTurns = null;
         grid = null;
@@ -70,12 +72,11 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
 
     }
 
-    public void startPlaying() throws InterruptedException {
-        connect();
+    public void startPlaying(SocketConnector socketConnector) throws InterruptedException {
+        this.connector = socketConnector;
 
         p1Ships = initializeShipCreation();
 
-        //TODO devi mandare le tue navi al tuo nemico
         chooseShipPositions(p1Ships);
 	}
 
@@ -85,26 +86,12 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
         frame.getContentPane().revalidate();
         frame.getContentPane().repaint();
 
-        p2Ships = null;
-        Object[][] enemyShips = null;
-        //TODO devi ricevere le navi del nemico e magari mostrare una schermata di attesa se lui non le ha già mandate
+        connector.writeShips(myShips);
 
-        if(enemyShips != null) {
-            //TODO si devono ricevere com.battleship.ShipPiece e le loro posizioni in una sorta di chiave valori
-            //TODO esempio: nave 1 (X=5, Y=5) (X=6, y=5)
-            p2Ships = null;
-            enemyShips = null;
-            grid = new Grid(enemyShips, this);
-        } else {
-            p2Ships = initializeShipCreation();
-            grid = new Grid(randomizeGrid(p2Ships), this);
-            //TODO Quando avrai implementato i socket devi chiudere il gioco in questo caso
-            // e cancellare queste due righe qui sopra aggiunte solo per debuggare
-            //System.exit(0);
-            //return;
-        }
+        p2Ships = initializeShipCreation();
+        Object[][] enemyShips = connector.readShips();
+        grid = new Grid(enemyShips, this);
 
-        //TODO Ricevi l'ok dal nemico
         small = new SmallGrid(myShips);
         small.setLocation(grid.getWidth()+10, grid.getY());
 
@@ -120,12 +107,9 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
         frame.addMouseListener(grid);
         frame.setVisible(true);
 
-        betweenTurns = new BetweenTurnsScreen((JPanel) frame.getContentPane(), grid, small, this);
+        betweenTurns = new BetweenTurnsScreen((JPanel) frame.getContentPane(), grid, small, this, connector);
 
-        //TODO ottieni questo valore dal server per sapere se è il tuo turno.
-        boolean ilMioturno = false;
-
-        if(!ilMioturno) {
+        if(!isServer) {
             betweenTurns.loadTurnScreen();
         }
         //gameLoop(p1Ships, grid, small);
@@ -224,7 +208,6 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
 
     @Override
     public void onSelection(int x, int y) {
-        //TODO manda all'avversario la selezione che hai fatto
         checkEnd();
 
         if (!grid.isTurn() && gameRunning){
@@ -236,6 +219,7 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    connector.writeMove(x, y);
                     betweenTurns.loadTurnScreen();
                 }
             }).start();
@@ -248,11 +232,30 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
     }
 
     @Override
-    public void onPlayClicked() {
+    public void onJoinMatchClicked(String ip) {
         try {
-            startPlaying();
-        } catch (InterruptedException e) {
+            isServer = false;
+            startPlaying(new SocketConnector(new Socket(ip, 7878)));
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onCreateMatchClicked() {
+	    new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ServerSocket serverSocket = new ServerSocket(7878);
+                    Socket s = serverSocket.accept();
+                    System.out.println("Socket accepted!");
+                    startPlaying(new SocketConnector(s));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(0);
+                }
+            }
+        }).start();
     }
 }
