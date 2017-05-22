@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 
 /**
  * Created by matteo on 22/05/17.
@@ -19,14 +20,34 @@ public class SocketConnector {
         this.outputStream = new DataOutputStream(socket.getOutputStream());
     }
 
-    public Object[][] readShips() {
+    public void readShipsPiecesPositions(Ship[] pieces) {
         try {
+            for(Ship s : pieces) {
+                Point p = new Point(inputStream.readInt(), inputStream.readInt());
+                s.setStartingOffGridPosition(p);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
+
+    public Object[][] readShips(Ship[] pieces) {
+        try {
+            HashMap<Integer, ShipPiece> idShipPeaceTable = new HashMap<>();
+            for(Ship s : pieces) {
+                for (ShipPiece p : s.getShipPieces()) {
+                    idShipPeaceTable.put(p.getId(), p);
+                }
+            }
+
+
             Object[][] enemyShips = new Object[10][10];
             for(int i = 0; i < enemyShips.length; i++) {
                 for(int j = 0; j < enemyShips[i].length; j++) {
                     int t = inputStream.readInt();
                     if(t == 0) {
-                        enemyShips[i][j] = new ShipPiece();
+                        enemyShips[i][j] = idShipPeaceTable.get(inputStream.readInt());
                     } else {
                         enemyShips[i][j] = 1;
                     }
@@ -41,25 +62,19 @@ public class SocketConnector {
         }
     }
 
-    public Point readMove() {
+    public void writeShips(Ship[] ship1, Object[][] ships) {
         try {
-            return new Point(inputStream.readInt(), inputStream.readInt());
-        } catch (Exception e){
-            e.printStackTrace();
-            System.exit(0);
-            return null;
-        }
-    }
+            for(Ship s : ship1) {
+                outputStream.writeInt(s.getStartingOffGridPosition().x);
+                outputStream.writeInt(s.getStartingOffGridPosition().y);
+            }
 
-    public void writeShips(Object[][] ships) {
-        try {
-            System.out.println(ships.length);
-            System.out.println(ships[0].length);
             for(int i = 0; i < ships.length; i++) {
                 for(int j = 0; j < ships[i].length; j++) {
                     Object o = ships[i][j];
                     if(o instanceof ShipPiece) {
                         outputStream.writeInt(0);
+                        outputStream.writeInt(((ShipPiece) o).getId());
                     } else {
                         outputStream.writeInt(1);
                     }
@@ -69,7 +84,18 @@ public class SocketConnector {
             e.printStackTrace();
             System.exit(0);
         }
+    }
 
+
+
+    public Point readMove() {
+        try {
+            return new Point(inputStream.readInt(), inputStream.readInt());
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(0);
+            return null;
+        }
     }
 
     public void close() throws IOException {

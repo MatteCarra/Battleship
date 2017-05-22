@@ -4,10 +4,12 @@ import java.awt.*;
 import javax.swing.ImageIcon;
 
 public class ShipPiece {
+	private int id;
 	private Image shipPieceAlive;
 	private boolean shipIsDead;
 
-	public ShipPiece() {
+	public ShipPiece(int id) {
+		this.id = id;
 		shipPieceAlive = new ImageIcon("Player1.png").getImage();
 		shipIsDead = false;
 	}
@@ -23,6 +25,7 @@ public class ShipPiece {
 	public void destroy() {
 		shipIsDead = true;
 		setShipImage("Player1Hit.png");
+		System.out.println("Destroying!");
 	}
 
 	/*
@@ -32,4 +35,7 @@ public class ShipPiece {
 		return shipIsDead;
 	}
 
+	public int getId() {
+		return id;
+	}
 }

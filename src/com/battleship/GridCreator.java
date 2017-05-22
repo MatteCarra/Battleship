@@ -199,18 +199,6 @@ public class GridCreator extends JPanel {
 						rightClick(shipNum, counter1, counter2);
 					}
 
-					System.out.println();
-					for (int i = 0; i < gridArray.length; i++) {
-						for (int j = 0; j < gridArray[i].length; j++) {
-							if (gridArray[j][i].getClass().getName().equals("com.battleship.ShipPiece")) {
-								System.out.print("1 ");
-							} else {
-								System.out.print("0 ");
-							}
-						}
-						System.out.println();
-					}
-
 					endSetup.repaint();
 
 				}

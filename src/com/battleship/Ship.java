@@ -26,8 +26,8 @@ public class Ship {
 	 */
 	public boolean checkIfDead() {
 		boolean isDead = true;
-		for (int i = 0; i < pieces.length; i++) {
-			if (!pieces[i].isDestroy()) {
+		for (ShipPiece piece : pieces) {
+			if (!piece.isDestroy()) {
 				isDead = false;
 			}
 		}

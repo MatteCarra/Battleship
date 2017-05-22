@@ -86,10 +86,12 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
         frame.getContentPane().revalidate();
         frame.getContentPane().repaint();
 
-        connector.writeShips(myShips);
+        connector.writeShips(p1Ships, myShips);
 
         p2Ships = initializeShipCreation();
-        Object[][] enemyShips = connector.readShips();
+        connector.readShipsPiecesPositions(p2Ships);
+        Object[][] enemyShips = connector.readShips(p2Ships);
+
         grid = new Grid(enemyShips, this);
 
         small = new SmallGrid(myShips);
@@ -114,12 +116,15 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
         }
         //gameLoop(p1Ships, grid, small);
     }
-	
+
+    int count = 0;
 	private Ship[] initializeShipCreation() {
 		Ship[] battleships = createShips(BATTLESHIP_SIZE, BATTLESHIP_COUNT);
 		Ship[] cruisers = createShips(CRUISER_SIZE, CRUISER_COUNT);
 		Ship[] destroyers = createShips(DESTROYER_SIZE, DESTROYER_COUNT);
 		Ship[] submarines = createShips(SUBMARINE_SIZE, SUBMARINE_COUNT);
+
+		count = 0;
 
 		Ship[] ships = concatShipArray(battleships, cruisers);
 		ships = concatShipArray(ships, destroyers);
@@ -129,11 +134,13 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
 	}
 
 	private Ship[] createShips(int shipSize, int numOfShips) {
+
 		Ship[] listOfShips = new Ship[numOfShips];
 		for (int i = 0; i < numOfShips; i++) {
 			ShipPiece[] shipArray = new ShipPiece[shipSize];
 			for (int j = 0; j < shipSize; j++) {
-				ShipPiece p = new ShipPiece();
+				ShipPiece p = new ShipPiece(count);
+                count++;
 				shipArray[j] = p;
 			}
 			listOfShips[i] = new Ship(shipArray);
@@ -170,20 +177,23 @@ public class GameLogic implements SelectListener, AttackListener, PlayListener, 
 	public void checkEnd(){
         boolean p1AllShipsDead = true;
         boolean p2AllShipsDead = true;
-        for (int i = 0; i < p1Ships.length; i++) {
-            if (p1Ships[i].checkIfDead()) {
-                for (int j = 0; j < p1Ships[i].getShipPieces().length; j++) {
-                    p1Ships[i].getShipPieces()[j].setShipImage("Dead.png");
+        for (Ship p1Ship : p1Ships) {
+            if (p1Ship.checkIfDead()) {
+                for (int j = 0; j < p1Ship.getShipPieces().length; j++) {
+                    System.out.println("p1 setting dead");
+                    p1Ship.getShipPieces()[j].setShipImage("Dead.png");
                 }
             } else {
                 p1AllShipsDead = false;
             }
         }
 
-        for (int i = 0; i < p2Ships.length; i++) {
-            if (p2Ships[i].checkIfDead()) {
-                for (int j = 0; j < p2Ships[i].getShipPieces().length; j++)
-                    p2Ships[i].getShipPieces()[j].setShipImage("Dead.png");
+        for (Ship p2Ship : p2Ships) {
+            if (p2Ship.checkIfDead()) {
+                for (int j = 0; j < p2Ship.getShipPieces().length; j++) {
+                    System.out.println("p2 setting dead");
+                    p2Ship.getShipPieces()[j].setShipImage("Dead.png");
+                }
             } else {
                 p2AllShipsDead = false;
             }
